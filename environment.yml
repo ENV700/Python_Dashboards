@@ -1,0 +1,28 @@
+
+name: shiny-dashboard
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.12
+  - pip
+
+  # Data manipulation
+  - pandas
+  - numpy
+
+  # Visualization
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # Jupyter and VS Code support
+  - ipykernel
+  - jupyterlab
+
+  # Dashboard framework
+  - pip:
+      - shiny
+      - shinyswatch
+      - shinywidgets
