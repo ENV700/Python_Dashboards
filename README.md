@@ -6,155 +6,48 @@ Date: Fall 2026
 
 # Python Dashboards
 
-This workspace demonstrates the development of Python-based dashboard using Python/Shiny. 
+This workspace demonstrates the development and deployment of Python-based dashboard using Python/Shiny. 
 
-To run this code, you'll need to create a specific Conda environment. For developing a Shiny for Python dashboard using Miniforge, VS Code, and Conda, I recommend creating a dedicated Conda environment using an `environment.yml` file.
-
-### 1. Conda environment recipe
-
-Save the following as `environment.yml` in your project directory.
+## Conda Environment
+To run this code, you'll need to create a specific Conda environment. Type these commands at a miniforge prompt:
 
 ```
-
-name: shiny-dashboard
-channels:
-  - conda-forge
-dependencies:
-  - python=3.12
-  - pip
-
-  # Data manipulation
-  - pandas
-  - geopandas
-
-  # Jupyter and VS Code support
-  - ipykernel
-
-  # Visualization
-  - ipyleaflet
-  - seaborn
-
-  #Dashboard framework
-  - shiny
-  - shinywidgets
-  - rsconnect-python
-
-  - pip:
-      - shinyswatch
-
-
-Key packages:
-
-- `shiny`: Core framework for building reactive Python dashboards.
-- `shinyswatch`: Provides Bootstrap themes for Shiny applications.
-- `shinywidgets`: Integrates interactive visualization libraries, including Plotly.
-- `pandas`, `numpy`: Support data preparation and analysis.
-
-### 2. Create and activate the environment
-
-Open a Powershell terminal in VS Code and execute:
-
-```
-conda env create -f environment.yml
-conda activate shiny-dashboard
+conda create -n env700-shiny python=3.12
+activate env700-shiny
+conda install pandas geopandas shiny ipyleaflet seaborn ipykernel shinywidgets rsconnect-python pip
+pip install shinyswatch
 ```
 
-Verify the installation:
+## Workspace setup
+For the Shiny app to work, your app.py should be in the root folder and your data organized in a "data" sub-folder. 
 
-```
-shiny --version
-```
+This workspace contains a simple workflow that enables a user to view all the NWIS stream locations for a selected county in North Carolina. The `app_template.ipynb` was used to prototype the application code and then this was recoded as a Shiny app using the ChatGPT prompt: 
+>From the code in the attached notebook, create a simple Python Shiny dashboard app with a dropdown of county names that executes the plot_nwis() function and displays the resulting plot in a display widget.
 
-### 3. Create your first dashboard
+You will also see a **`requirements.txt`** file in the project `src` folder. This is a listing of all the 3rd party packages required to run your Shiny app. (These will be installed when the app is deployed.) If you are uncertain what should be included here, you can ask ChatGPT to create a requirements.txt file for you for the app.py file you provide it. 
 
-Create a file named `app.py`:
+## Publishing
+After testing, the app.py file is published as follows:
+1. Create a free account on Posit Cloud: <https://posit.cloud/> and log in
+1. In VSCode, install the **Posit Publisher** extension. This will add a new item to your VS Code Activity Bar. 
+1. Add your credentials to the Posit Publisher extension
+    1. Activate the Posit Publisher interface, and select the **CREDENTIALS** tab. 
+    1. Click on the **+** which will open a box to add a new credential.
+    1. Select Posit Connect Cloud and follow the instructions to authorize VS code to access your Posit cloud account.
+1. Deploy your app
+    1. With the Posit Publisher active, select the **DEPLOYMENT** tab.
+    1. Create a new deployment, navigating to your `app.py` file for the file to deploy
+    1. Give you deployment a name; this will be used to identify this deployment within VS Code (e.g. if you have > 1)
+    1. Select the credential used to upload this to Posit Connect Cloud
+    1. Review the files that will be included in your deployment; the default should suffice. 
+    1. Click the **Deploy Your Project** button. 
 
-```python
+> If you update your code, simply re-deply your app.
 
-from shiny import App, ui, render
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+## Viewing
+If all goes well, the Posit Publisher will configure everything and upload your app to the Posit Cloud. 
+1. Navigate to your posit cloud page; you should see your app there. 
+1. Copy the link and share it with others. 
+1. **Pro Tip**: Use <http://duke.is> to give your Shiny App URL a better link name
 
-# Load example dataset
-df = sns.load_dataset("penguins")
-
-# Define the user interface
-app_ui = ui.page_sidebar(
-    ui.sidebar(
-        ui.input_select(
-            "species",
-            "Select species:",
-            choices=["All", "Adelie", "Chinstrap", "Gentoo"]
-        ),
-    ),
-    ui.h2("Penguin Data Explorer"),
-    ui.output_plot("penguin_plot"),
-    ui.output_data_frame("penguin_table"),
-)
-
-# Define server-side behavior
-def server(input, output, session):
-
-    @render.plot
-    def penguin_plot():
-        data = df if input.species() == "All" else (
-            df[df["species"] == input.species()]
-        )
-
-        fig, ax = plt.subplots()
-        sns.scatterplot(
-            data=data,
-            x="bill_length_mm",
-            y="bill_depth_mm",
-            hue="species",
-            ax=ax
-        )
-        return fig
-
-    @render.data_frame
-    def penguin_table():
-        data = df if input.species() == "All" else (
-            df[df["species"] == input.species()]
-        )
-        return render.DataGrid(data)
-
-app = App(app_ui, server)
-
-```
-
-### 4. Run the dashboard
-
-From the terminal:
-
-```
-shiny run --reload app.py
-```
-
-Open `http://127.0.0.1:8000` in your browser.
-
-The `--reload` option automatically restarts the application when you save changes to your Python code.
-
-### 5. Recommended project structure
-
-```
-shiny-dashboard/
-├── environment.yml
-├── app.py
-├── data/
-│   └── observations.csv
-├── modules/
-│   └── analysis.py
-├── www/
-│   └── styles.css
-├── notebooks/
-│   └── exploration.ipynb
-├── .gitignore
-└── README.md
-```
-
-For an environmental data analysis dashboard, this structure lets you maintain exploratory analyses in Jupyter notebooks while developing the interactive dashboard separately.
-
-One architectural recommendation: Use Shiny's reactive programming model to connect user controls to data filtering and visualization. This allows you to reuse much of your existing Pandas and Seaborn code without learning JavaScript.
-
-For deployment, you can subsequently publish the dashboard to [shinyapps.io](https://www.shinyapps.io/?utm_source=chatgpt.com) or [Posit Connect Cloud](https://connect.posit.cloud/?utm_source=chatgpt.com). Deployment environments may require a separate Python dependency specification, typically `requirements.txt`, rather than relying directly on the Conda YAML file.
+Here's my link: <https://connect.posit.cloud/johnpfay/content/01a1d69d-feca-fe9a-454a-d28241b918b4>
