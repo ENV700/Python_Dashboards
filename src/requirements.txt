@@ -1,0 +1,5 @@
+shiny
+geopandas
+pandas
+requests
+matplotlib
