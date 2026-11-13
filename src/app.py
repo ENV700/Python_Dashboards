@@ -11,11 +11,13 @@ import pandas as pd
 import requests
 from shiny import App, render, ui
 
+#Set State FIPS code
+state_FIPS = "37" 
 
 # Set paths
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR.parent / "data"
-NWIS_DATA_FILE = DATA_DIR / "NWIS.geojson"
+NWIS_DATA_FILE = DATA_DIR / f"NWIS_{state_FIPS}.geojson"
 COUNTY_URL = "https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_county_20m.zip"
 
 # Function to load NWIS data as a geodataframe
@@ -30,7 +32,7 @@ def load_nwis_data():
                 "limit": 50000,
                 "properties": "district_code,basin_code,site_type,altitude,drainage_area",
                 "offset": 0,
-                "state_code": "37",
+                "state_code": state_FIPS,
             },
             timeout=120,
         )
@@ -45,7 +47,7 @@ def load_nwis_data():
 def load_counties():
     """Read the Census county boundaries and keep North Carolina counties."""
     counties = gpd.read_file(COUNTY_URL)
-    return counties.loc[counties["STATEFP"] == "37"].to_crs("EPSG:4326")
+    return counties.loc[counties["STATEFP"] == state_FIPS].to_crs("EPSG:4326")
 
 # Execute the functions
 gdf_nwis = load_nwis_data()
@@ -76,9 +78,9 @@ app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.input_select(
             "county",
-            "North Carolina county",
+            "County",
             choices=COUNTY_NAMES,
-            selected="Durham" if "Durham" in COUNTY_NAMES else COUNTY_NAMES[0],
+            selected=COUNTY_NAMES[0],
         ),
         title="Select a county",
     ),
