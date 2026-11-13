@@ -17,41 +17,37 @@ Save the following as `environment.yml` in your project directory.
 ```
 
 name: shiny-dashboard
-
 channels:
   - conda-forge
-
 dependencies:
   - python=3.12
   - pip
 
   # Data manipulation
   - pandas
-  - numpy
-
-  # Visualization
-  - matplotlib
-  - seaborn
-  - plotly
+  - geopandas
 
   # Jupyter and VS Code support
   - ipykernel
-  - jupyterlab
 
-  # Dashboard framework
+  # Visualization
+  - ipyleaflet
+  - seaborn
+
+  #Dashboard framework
+  - shiny
+  - shinywidgets
+  - rsconnect-python
+
   - pip:
-      - shiny
       - shinyswatch
-      - shinywidgets
 
-```
 
 Key packages:
 
 - `shiny`: Core framework for building reactive Python dashboards.
 - `shinyswatch`: Provides Bootstrap themes for Shiny applications.
 - `shinywidgets`: Integrates interactive visualization libraries, including Plotly.
-- `plotly`: Produces interactive charts with zooming, tooltips, and selection.
 - `pandas`, `numpy`: Support data preparation and analysis.
 
 ### 2. Create and activate the environment
